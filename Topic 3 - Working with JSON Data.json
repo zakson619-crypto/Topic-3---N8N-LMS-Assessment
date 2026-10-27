@@ -1,0 +1,317 @@
+{
+  "name": "Topic 3 - Working with JSON Data",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "086a029d-da11-482a-90e5-866343b66196",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"orderId\": \"ORD-1001\",\n  \"customer\": {\n    \"name\": \"Asha Rao\",\n    \"email\": \"asha.rao@example.com\",\n    \"address\": {\n      \"city\": \"Hyderabad\",\n      \"country\": \"India\"\n    }\n  },\n  \"items\": [\n    { \"sku\": \"MS-100\", \"name\": \"Wireless Mouse\", \"qty\": 2, \"price\": 24.5 },\n    { \"sku\": \"HB-200\", \"name\": \"USB-C Hub\", \"qty\": 1, \"price\": 50 }\n  ],\n  \"payment\": {\n    \"method\": \"UPI\",\n    \"status\": \"paid\"\n  },\n  \"tags\": [\"priority\", \"electronics\", \"gift\"]\n}",
+        "options": {}
+      },
+      "id": "dfbbdd9f-3d91-40c8-97c3-aeef9f5a56ad",
+      "name": "Create Nested JSON",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c1000000-0000-4000-8000-000000000001",
+              "name": "extracted.customerName",
+              "value": "={{ $json.customer.name }}",
+              "type": "string"
+            },
+            {
+              "id": "c1000000-0000-4000-8000-000000000002",
+              "name": "extracted.city",
+              "value": "={{ $json.customer.address.city }}",
+              "type": "string"
+            },
+            {
+              "id": "c1000000-0000-4000-8000-000000000003",
+              "name": "extracted.firstItemName",
+              "value": "={{ $json.items[0].name }}",
+              "type": "string"
+            },
+            {
+              "id": "c1000000-0000-4000-8000-000000000004",
+              "name": "extracted.secondItemSku",
+              "value": "={{ $json.items[1].sku }}",
+              "type": "string"
+            },
+            {
+              "id": "c1000000-0000-4000-8000-000000000005",
+              "name": "extracted.firstTag",
+              "value": "={{ $json.tags[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "c1000000-0000-4000-8000-000000000006",
+              "name": "extracted.lastTag",
+              "value": "={{ $json.tags[$json.tags.length - 1] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "340af860-53ba-49c7-be00-0ab0fc21080f",
+      "name": "Extract Nested Values",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d1000000-0000-4000-8000-000000000001",
+              "name": "orderId",
+              "value": "={{ $json.orderId }}",
+              "type": "string"
+            },
+            {
+              "id": "d1000000-0000-4000-8000-000000000002",
+              "name": "customer.name",
+              "value": "={{ $json.customer.name }}",
+              "type": "string"
+            },
+            {
+              "id": "d1000000-0000-4000-8000-000000000003",
+              "name": "customer.email",
+              "value": "={{ $json.customer.email }}",
+              "type": "string"
+            },
+            {
+              "id": "d1000000-0000-4000-8000-000000000004",
+              "name": "shipping.location",
+              "value": "={{ $json.customer.address.city + ', ' + $json.customer.address.country }}",
+              "type": "string"
+            },
+            {
+              "id": "d1000000-0000-4000-8000-000000000005",
+              "name": "firstItem",
+              "value": "={{ $json.items[0].name }}",
+              "type": "string"
+            },
+            {
+              "id": "d1000000-0000-4000-8000-000000000006",
+              "name": "itemCount",
+              "value": "={{ $json.items.length }}",
+              "type": "number"
+            },
+            {
+              "id": "d1000000-0000-4000-8000-000000000007",
+              "name": "totalAmount",
+              "value": "={{ Math.round($json.items.reduce((sum, i) => sum + i.qty * i.price, 0) * 100) / 100 }}",
+              "type": "number"
+            },
+            {
+              "id": "d1000000-0000-4000-8000-000000000008",
+              "name": "paymentStatus",
+              "value": "={{ $json.payment.status.toUpperCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "d1000000-0000-4000-8000-000000000009",
+              "name": "primaryTag",
+              "value": "={{ $json.tags[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1f08af04-ebdb-4941-9ba4-74b5a40d795e",
+      "name": "Transform Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://httpbin.org/post",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Custom-Header",
+              "value": "n8n-json-assessment"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "1a1f8098-e6d9-46c2-8aaa-6c05058a036c",
+      "name": "Send Transformed JSON",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1000000-0000-4000-8000-000000000001",
+              "name": "httpStatus",
+              "value": "={{ $json.statusCode }}",
+              "type": "number"
+            },
+            {
+              "id": "e1000000-0000-4000-8000-000000000002",
+              "name": "echoedOrderId",
+              "value": "={{ $json.body.json.orderId }}",
+              "type": "string"
+            },
+            {
+              "id": "e1000000-0000-4000-8000-000000000003",
+              "name": "echoedLocation",
+              "value": "={{ $json.body.json.shipping.location }}",
+              "type": "string"
+            },
+            {
+              "id": "e1000000-0000-4000-8000-000000000004",
+              "name": "echoedTotalAmount",
+              "value": "={{ $json.body.json.totalAmount }}",
+              "type": "number"
+            },
+            {
+              "id": "e1000000-0000-4000-8000-000000000005",
+              "name": "responseContentType",
+              "value": "={{ $json.headers['content-type'] }}",
+              "type": "string"
+            },
+            {
+              "id": "e1000000-0000-4000-8000-000000000006",
+              "name": "transformationValid",
+              "value": "={{ $json.statusCode === 200 && $json.body.json.orderId === $('Transform Payload').item.json.orderId && $json.body.json.totalAmount === $('Transform Payload').item.json.totalAmount && $json.body.json.shipping.location === $('Transform Payload').item.json.shipping.location }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4e9d5b3c-993e-4d2c-8cfa-e155515f0a47",
+      "name": "Validate Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1200,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Create Nested JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Nested JSON": {
+      "main": [
+        [
+          {
+            "node": "Extract Nested Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Nested Values": {
+      "main": [
+        [
+          {
+            "node": "Transform Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Payload": {
+      "main": [
+        [
+          {
+            "node": "Send Transformed JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Transformed JSON": {
+      "main": [
+        [
+          {
+            "node": "Validate Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4bf8fc10-cdd7-4f72-bd10-25c4703ceb32",
+  "meta": {
+    "instanceId": "a03c7678428ef19ededbf912f16f7d5798ec7b9ab4c17f2a2def6a9e791e7215"
+  },
+  "nodeGroups": [],
+  "id": "HKUDYMcYcgpDPZS6",
+  "tags": []
+}
